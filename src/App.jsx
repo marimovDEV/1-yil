@@ -78,7 +78,7 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
               <p className="text-pink-200/50 mb-3 uppercase tracking-[0.4em] text-[10px] font-bold">2025.04.17 dan beri...</p>
               <DaysCounter />
-              <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
+              <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-sm">
                 Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
               </p>
               <motion.button 
@@ -114,8 +114,8 @@ export default function App() {
                 <motion.div key="scene2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
                   <motion.img src="/img2.jpg" className="w-64 md:w-80 rounded-[2rem] mb-10 shadow-2xl border border-white/10" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} />
                   <div className="flex flex-col space-y-4 w-full max-w-xs">
-                    <motion.div className="bg-gray-800 p-4 rounded-2xl rounded-tl-none self-start text-sm md:text-base border border-white/5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>Salom 🙂</motion.div>
-                    <motion.div className="bg-pink-600 p-4 rounded-2xl rounded-tr-none self-end text-sm md:text-base shadow-lg" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.2 }}>Salom 🙂</motion.div>
+                    <motion.div className="bg-gray-800 p-4 rounded-2xl rounded-tl-none self-start text-sm md:text-base border border-white/5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>Shatb tapdiz instamni</motion.div>
+                    <motion.div className="bg-pink-600 p-4 rounded-2xl rounded-tr-none self-end text-sm md:text-base shadow-lg" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.2 }}>ohsham danishdiq masmi axi san bilan</motion.div>
                   </div>
                   <motion.p className="mt-10 text-center text-xl md:text-2xl font-serif italic text-pink-50/90 px-4 leading-relaxed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
                     Barchin… o‘sha payt oddiy yozishma edi, lekin bilmagandim — hammasi shundan boshlanishini…
@@ -166,7 +166,7 @@ export default function App() {
 
 /* APPLE-STYLE PREMIUM GALLERY COMPONENT */
 function PremiumGallery({ onNext }) {
-  const images = ["/img1.jpg", "/img2.jpg", "/img3.jpg", "/img4.jpg", "/img5.jpg"];
+  const images = ["/img1.jpg", "/img2.jpg", "/img3.jpg"];
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef(null);
 
