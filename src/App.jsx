@@ -15,7 +15,11 @@ export default function App() {
     if (a1) {
       a1.muted = false;
       a1.volume = 0.4;
-      a1.play().catch((e) => console.log("Audio 1 blocked:", e));
+      a1.play().then(() => {
+        console.log("Playback started successfully");
+      }).catch((e) => {
+        console.error("Playback failed:", e);
+      });
     }
     setStarted(true);
   };
@@ -76,122 +80,122 @@ export default function App() {
     { img: "/img5.jpg", text: "Va bugun... biz hali ham birgamiz ❤️" }
   ];
 
-  if (!started) {
-    return (
-      <div className="h-screen flex flex-col justify-center items-center bg-black text-white text-center px-6 selection:bg-pink-500/30">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-        >
-          <h1 className="text-3xl md:text-4xl font-serif mb-4 tracking-tight text-pink-50">
-            Bugun biz 1 yil bo‘ldik...
-          </h1>
-          
-          <p className="text-gray-400 mb-10 font-light tracking-wide">
-            Hammasi shu kundan boshlangan edi
-          </p>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={startExperience}
-            className="bg-pink-600 hover:bg-pink-500 px-10 py-4 rounded-2xl text-lg font-medium shadow-lg shadow-pink-900/20 transition-all duration-300"
-          >
-            Bos ❤️
-          </motion.button>
-        </motion.div>
-
-        <audio ref={audio1} src="/song1.mp3" loop />
-        <audio ref={audio2} src="/song2.mp3" loop />
-        
-        {/* Subtle background glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.1),transparent_70%)] pointer-events-none" />
-      </div>
-    );
-  }
-
   return (
-    <div className="relative bg-black text-white min-h-screen px-4 py-10 flex flex-col items-center selection:bg-pink-500/30 overflow-x-hidden">
+    <div className="relative bg-black text-white min-h-screen flex flex-col items-center selection:bg-pink-500/30 overflow-hidden font-sans">
       
-      {/* Cinematic subtle particles (Very faint) */}
-      <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.03]" />
+      {/* PERSISTENT AUDIO ELEMENTS - Must stay mounted to keep playing */}
+      <audio ref={audio1} src="/song1.mp3" loop preload="auto" />
+      <audio ref={audio2} src="/song2.mp3" loop preload="auto" />
 
-      <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
-        <AnimatePresence mode="wait">
+      {/* Intro Screen */}
+      {!started ? (
+        <div className="h-screen w-full flex flex-col justify-center items-center text-center px-6 transition-all duration-1000">
           <motion.div
-            key={scene}
-            initial={{ opacity: 0, filter: "blur(20px)", scale: 0.98 }}
-            animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-            exit={{ opacity: 0, filter: "blur(20px)", scale: 1.02 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full flex flex-col items-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            className="z-10"
           >
-            {scene < 5 ? (
-              <div className="flex flex-col items-center w-full">
-                <div className="w-full aspect-[4/5] relative group">
-                  <img 
-                    src={scenes[scene].img} 
-                    className="rounded-3xl w-full h-full object-cover shadow-2xl shadow-black/50 border border-white/5" 
-                    alt="Memory"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                </div>
-                
-                <motion.p 
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 1 }}
-                  className="mt-10 text-center text-xl md:text-2xl font-serif italic text-pink-50 opacity-90 leading-relaxed px-4"
-                >
-                  {scenes[scene].text}
-                </motion.p>
-              </div>
-            ) : (
-              <Final />
-            )}
+            <h1 className="text-3xl md:text-5xl font-serif mb-4 tracking-tight text-pink-50">
+              Bugun biz 1 yil bo‘ldik...
+            </h1>
+            
+            <p className="text-gray-400 mb-10 font-light tracking-wide text-sm md:text-base">
+              Hammasi shu kundan boshlangan edi
+            </p>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={startExperience}
+              className="bg-pink-600 hover:bg-pink-500 px-12 py-4 rounded-2xl text-lg font-bold shadow-2xl shadow-pink-900/40 transition-all duration-300 active:bg-pink-700"
+            >
+              Bos ❤️
+            </motion.button>
           </motion.div>
-        </AnimatePresence>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.15),transparent_70%)] pointer-events-none" />
+        </div>
+      ) : (
+        /* Main Content */
+        <div className="w-full max-w-lg flex flex-col items-center pt-10 px-4 min-h-screen">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={scene}
+              initial={{ opacity: 0, filter: "blur(20px)", scale: 0.95 }}
+              animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+              exit={{ opacity: 0, filter: "blur(20px)", scale: 1.05 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full flex flex-col items-center"
+            >
+              {scene < 5 ? (
+                <div className="flex flex-col items-center w-full">
+                  <div className="w-full aspect-[4/5] relative shadow-2xl shadow-black/80 rounded-3xl overflow-hidden border border-white/5">
+                    <img 
+                      src={scenes[scene].img} 
+                      className="w-full h-full object-cover transition-transform duration-1000" 
+                      alt="Memory"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                  </div>
+                  
+                  <motion.p 
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 1 }}
+                    className="mt-12 text-center text-2xl md:text-3xl font-serif italic text-pink-50 leading-relaxed drop-shadow-lg"
+                  >
+                    {scenes[scene].text}
+                  </motion.p>
+                </div>
+              ) : (
+                <Final />
+              )}
+            </motion.div>
+          </AnimatePresence>
 
-        {/* Navigation */}
-        {scene < 5 && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
-            onClick={nextScene}
-            className="mt-12 group flex items-center gap-3 text-gray-500 hover:text-white transition-colors duration-500 tracking-[0.2em] text-[11px] uppercase"
-          >
-            Davom etish
-            <span className="group-hover:translate-x-1 transition-transform duration-500">→</span>
-          </motion.button>
-        )}
+          {/* Navigation */}
+          {scene < 5 && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2 }}
+              onClick={nextScene}
+              className="mt-16 group flex items-center gap-4 text-gray-400 hover:text-white transition-all duration-500 tracking-[0.4em] text-[10px] uppercase font-bold"
+            >
+              Davom etish
+              <span className="group-hover:translate-x-2 transition-transform duration-500">→</span>
+            </motion.button>
+          )}
+        </div>
+      )}
+
+      {/* Global subtle background elements */}
+      <div className="fixed inset-0 pointer-events-none z-[-1]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.1),transparent_70%)]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
       </div>
-
-      <audio ref={audio1} src="/song1.mp3" loop />
-      <audio ref={audio2} src="/song2.mp3" loop />
     </div>
   );
 }
 
 function Final() {
   useEffect(() => {
-    const end = Date.now() + 15 * 1000;
+    const end = Date.now() + 20 * 1000;
 
     (function frame() {
       confetti({
         particleCount: 2,
         angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.8 },
+        spread: 45,
+        origin: { x: 0, y: 0.7 },
         colors: ["#ff1d8e", "#ffffff"]
       });
       confetti({
         particleCount: 2,
         angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.8 },
-        colors: ["#ff1d8e", "#ffffff"]
+        spread: 45,
+        origin: { x: 1, y: 0.7 },
+        colors: ["#ff0000", "#ffffff"]
       });
 
       if (Date.now() < end) {
@@ -204,11 +208,11 @@ function Final() {
     <div className="text-center mt-12 py-10 flex flex-col items-center w-full">
       <motion.div
         animate={{ 
-          scale: [1, 1.1, 1],
+          scale: [1, 1.2, 1],
           opacity: [0.8, 1, 0.8]
         }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="text-8xl mb-12 drop-shadow-[0_0_30px_rgba(255,29,142,0.4)]"
+        transition={{ repeat: Infinity, duration: 1.5 }}
+        className="text-9xl mb-14 drop-shadow-[0_0_40px_rgba(255,29,142,0.5)]"
       >
         ❤️
       </motion.div>
@@ -216,8 +220,8 @@ function Final() {
       <motion.h1 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 1.5 }}
-        className="text-4xl md:text-5xl font-serif font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-pink-200 tracking-tight"
+        transition={{ delay: 0.5, duration: 2 }}
+        className="text-5xl md:text-6xl font-serif font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white via-pink-100 to-pink-500 tracking-tight"
       >
         Men seni yaxshi ko‘raman 
       </motion.h1>
@@ -225,13 +229,11 @@ function Final() {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1.5 }}
-        className="text-gray-400 font-light tracking-[0.3em] uppercase text-xs"
+        transition={{ delay: 1.8, duration: 1.5 }}
+        className="text-pink-200/50 font-light tracking-[0.5em] uppercase text-[10px]"
       >
-        Bu hali boshlanishi xolos
+        Umrbod birga bo'laylik
       </motion.p>
-      
-      <div className="w-12 h-[1px] bg-pink-900/50 mt-10" />
     </div>
   );
 }
