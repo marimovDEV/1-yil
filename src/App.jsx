@@ -12,7 +12,13 @@ export default function App() {
     if (audioRef.current) {
       audioRef.current.muted = false;
       audioRef.current.volume = 0.4;
-      audioRef.current.play().catch(e => console.log("Audio blocked:", e));
+      audioRef.current.play().then(() => {
+        console.log("Audio playing");
+      }).catch(e => {
+        console.log("Audio blocked, trying again...", e);
+        // Fallback for some browsers
+        audioRef.current.play();
+      });
     }
     setStarted(true);
   };
@@ -20,7 +26,6 @@ export default function App() {
   const next = () => {
     setScene(scene + 1);
     
-    // Confetti on transitions for WOW effect
     if (scene === 3) {
       confetti({
         particleCount: 150,
@@ -39,150 +44,131 @@ export default function App() {
     { img: "/img5.jpg", text: "Va bugun... biz hali ham birgamiz ❤️" }
   ];
 
-  if (!started) {
-    return (
-      <div className="h-screen flex flex-col justify-center items-center bg-black text-white text-center px-6 selection:bg-pink-500/30 overflow-hidden relative">
-        <motion.div
-           initial={{ opacity: 0, scale: 0.9 }}
-           animate={{ opacity: 1, scale: 1 }}
-           transition={{ duration: 1.5 }}
-           className="z-10 relative"
-        >
-          <p className="text-pink-200/50 mb-3 uppercase tracking-[0.4em] text-[10px] font-bold">
-            2025.04.17 dan beri...
-          </p>
-
-          <DaysCounter />
-
-          <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
-            Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
-          </p>
-
-          <motion.button 
-            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(219,39,119,0.5)" }}
-            whileTap={{ scale: 0.95 }}
-            onClick={start} 
-            className="mt-14 bg-pink-600 hover:bg-pink-500 px-12 py-4 rounded-2xl text-lg font-black tracking-widest uppercase transition-all duration-300"
-          >
-            Davom et ❤️
-          </motion.button>
-        </motion.div>
-
-        {/* PERSISTENT AUDIO ELEMENT */}
-        <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
-
-        {/* Initial Background Hearts */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          {[...Array(10)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ 
-                opacity: [0, 0.4, 0], 
-                y: "-100%",
-              }}
-              transition={{
-                duration: Math.random() * 8 + 8,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "linear"
-              }}
-              className="absolute text-pink-500"
-              style={{
-                left: Math.random() * 100 + "%",
-                fontSize: Math.random() * 20 + 10 + "px"
-              }}
-            >
-              ❤️
-            </motion.div>
-          ))}
-        </div>
-        
-        {/* Ambient background glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.2),transparent_70%)] pointer-events-none" />
-      </div>
-    );
-  }
-
   return (
     <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30 relative">
+      
+      {/* 
+          CRITICAL: Single audio element outside conditional logic 
+          to ensure it never unmounts during state changes.
+      */}
       <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
 
       {/* Persistent global particles */}
       <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.04] z-0" />
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.05),transparent_80%)] z-[-1]" />
 
-      <motion.div 
-        key="experience"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="w-full h-screen flex flex-col items-center justify-center relative z-10"
-      >
-        <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait">
+        {!started ? (
+          /* INTRO SCENE */
           <motion.div
-            key={scene}
-            initial={{ opacity: 0, filter: "blur(20px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full flex flex-col items-center justify-center h-full"
+             key="intro"
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+             transition={{ duration: 1.5 }}
+             className="h-screen w-full flex flex-col justify-center items-center text-center px-6 relative z-10"
           >
-            {scene === 0 ? (
-              /* THE CINEMATIC MEMORY MOMENT (SCENE 2) */
-              <div className="relative flex flex-col items-center justify-center min-h-screen w-full px-4 overflow-hidden">
-                <FloatingHearts count={8} />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <p className="text-pink-200/50 mb-3 uppercase tracking-[0.4em] text-[10px] font-bold">
+                2025.04.17 dan beri...
+              </p>
 
-                <motion.div
-                  className="relative group w-full max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1 }}
-                >
-                  <motion.img
-                    src={scenes[0].img}
-                    className="w-full h-full object-cover"
-                    initial={{ scale: 1.3 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                  />
-                  {/* Dark Romantic Overlay */}
-                  <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                </motion.div>
+              <DaysCounter />
 
-                <motion.p
-                  className="mt-10 text-center text-2xl md:text-4xl font-serif italic text-white px-6 leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1, duration: 1 }}
-                >
-                  {scenes[0].text}
-                </motion.p>
-              </div>
-            ) : scene < 4 ? (
-              <ImageScene img={scenes[scene].img} text={scenes[scene].text} />
-            ) : scene === 4 ? (
-              <Gallery />
-            ) : (
-              <Final />
-            )}
+              <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
+                Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
+              </p>
+
+              <motion.button 
+                whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(219,39,119,0.5)" }}
+                whileTap={{ scale: 0.95 }}
+                onClick={start} 
+                className="mt-14 bg-pink-600 hover:bg-pink-500 px-12 py-4 rounded-2xl text-lg font-black tracking-widest uppercase transition-all duration-300"
+              >
+                Davom et ❤️
+              </motion.button>
+            </motion.div>
+
+            {/* Subtle Intro Hearts */}
+            <FloatingHearts count={10} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.2),transparent_70%)] pointer-events-none" />
           </motion.div>
-        </AnimatePresence>
-
-        {/* Global Navigation Button */}
-        {scene < 5 && (
-          <motion.button 
+        ) : (
+          /* MAIN CONTENT */
+          <motion.div 
+            key="experience"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2.5 }}
-            onClick={next} 
-            className="fixed bottom-12 z-50 bg-white/5 backdrop-blur-md px-10 py-3 rounded-full border border-white/10 text-[10px] tracking-[0.5em] uppercase font-black hover:bg-white/10 transition-all active:scale-90 text-pink-200/60"
+            className="w-full h-screen flex flex-col items-center justify-center relative z-10"
           >
-            Keyingi →
-          </motion.button>
-        )}
-      </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={scene}
+                initial={{ opacity: 0, filter: "blur(20px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full flex flex-col items-center justify-center h-full"
+              >
+                {scene === 0 ? (
+                  <div className="relative flex flex-col items-center justify-center min-h-screen w-full px-4 overflow-hidden pt-10">
+                    <FloatingHearts count={8} />
 
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.05),transparent_80%)] z-[-1]" />
+                    <motion.div
+                      className="relative group w-full max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 1 }}
+                    >
+                      <motion.img
+                        src={scenes[0].img}
+                        className="w-full h-full object-cover"
+                        initial={{ scale: 1.3 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                      />
+                      <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                    </motion.div>
+
+                    <motion.p
+                      className="mt-10 text-center text-2xl md:text-4xl font-serif italic text-white px-6 leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1, duration: 1 }}
+                    >
+                      {scenes[0].text}
+                    </motion.p>
+                  </div>
+                ) : scene < 4 ? (
+                  <ImageScene img={scenes[scene].img} text={scenes[scene].text} />
+                ) : scene === 4 ? (
+                  <Gallery />
+                ) : (
+                  <Final />
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Global Navigation Button */}
+            {scene < 5 && (
+              <motion.button 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.5 }}
+                onClick={next} 
+                className="fixed bottom-12 z-50 bg-white/5 backdrop-blur-md px-10 py-3 rounded-full border border-white/10 text-[10px] tracking-[0.5em] uppercase font-black hover:bg-white/10 transition-all active:scale-90 text-pink-200/60"
+              >
+                Keyingi →
+              </motion.button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -230,7 +216,7 @@ function DaysCounter() {
   );
 }
 
-/* Floating Hearts Background Background Effect */
+/* Floating Hearts Background Effect */
 function FloatingHearts({ count = 8 }) {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -261,11 +247,11 @@ function FloatingHearts({ count = 8 }) {
 /* Image Scene Component */
 function ImageScene({ img, text }) {
   return (
-    <div className="text-center px-4 w-full max-w-md flex flex-col items-center">
-      <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10 mb-12 w-full">
+    <div className="text-center px-4 w-full max-w-md flex flex-col items-center pt-10">
+      <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.8)] border border-white/10 mb-10 w-full">
         <motion.img
           src={img}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover shadow-inner"
           initial={{ scale: 1.4, filter: "blur(20px)" }}
           animate={{ scale: 1, filter: "blur(0px)" }}
           transition={{ duration: 2.5, ease: "easeOut" }}
@@ -275,7 +261,7 @@ function ImageScene({ img, text }) {
       <motion.p 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 1.5 }}
+        transition={{ delay: 0.8, duration: 1.5 }}
         className="text-2xl md:text-3xl font-serif italic text-pink-50/90 leading-relaxed px-4 drop-shadow-lg"
       >
         {text}
@@ -299,7 +285,7 @@ function Gallery() {
         {["/img1.jpg", "/img2.jpg", "/img3.jpg", "/img4.jpg", "/img5.jpg"].map((img, i) => (
           <div 
             key={i}
-            className="flex-shrink-0 w-[80%] md:w-80 aspect-[4/5] bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden snap-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
+            className="flex-shrink-0 w-[85%] md:w-80 aspect-[4/5] bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden snap-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
           >
             <img src={img} className="w-full h-full object-cover" alt="Memory" />
           </div>
