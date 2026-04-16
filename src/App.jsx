@@ -32,7 +32,7 @@ export default function App() {
   };
 
   const scenes = [
-    { img: "/img1.jpg", text: "Hammasi shu kundan boshlangan edi..." },
+    { img: "/img1.jpg", text: "Barchin, shu rasm — hammasi boshlangan kun…" },
     { img: "/img2.jpg", text: "Senga yozgan birinchi xabarimni hali ham eslayman..." },
     { img: "/img3.jpg", text: "Biz ko‘p kuldik, ko‘p xotiralar yig‘dik..." },
     { img: "/img4.jpg", text: "Ba'zida qiyin bo‘ldi, lekin hech qachon taslim bo‘lmadik..." },
@@ -55,7 +55,7 @@ export default function App() {
           <DaysCounter />
 
           <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
-            Barchin bilan o‘tgan har bir kun — men uchun alohida e'tibor ❤️
+            Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
           </p>
 
           <motion.button 
@@ -71,19 +71,18 @@ export default function App() {
         {/* PERSISTENT AUDIO ELEMENT */}
         <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
 
-        {/* Subtle Background Hearts (Intro Only) */}
+        {/* Initial Background Hearts */}
         <div className="absolute inset-0 pointer-events-none opacity-20">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(10)].map((_, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: "100%" }}
               animate={{ 
                 opacity: [0, 0.4, 0], 
                 y: "-100%",
-                x: [0, Math.random() * 50 - 25] 
               }}
               transition={{
-                duration: Math.random() * 10 + 10,
+                duration: Math.random() * 8 + 8,
                 repeat: Infinity,
                 delay: Math.random() * 5,
                 ease: "linear"
@@ -91,7 +90,6 @@ export default function App() {
               className="absolute text-pink-500"
               style={{
                 left: Math.random() * 100 + "%",
-                top: "110%",
                 fontSize: Math.random() * 20 + 10 + "px"
               }}
             >
@@ -122,16 +120,47 @@ export default function App() {
         <AnimatePresence mode="wait">
           <motion.div
             key={scene}
-            initial={{ opacity: 0, x: 50, filter: "blur(20px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, x: -50, filter: "blur(20px)" }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full flex flex-col items-center justify-center"
+            initial={{ opacity: 0, filter: "blur(20px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full flex flex-col items-center justify-center h-full"
           >
-            {scene < 4 ? (
+            {scene === 0 ? (
+              /* THE CINEMATIC MEMORY MOMENT (SCENE 2) */
+              <div className="relative flex flex-col items-center justify-center min-h-screen w-full px-4 overflow-hidden">
+                <FloatingHearts count={8} />
+
+                <motion.div
+                  className="relative group w-full max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1 }}
+                >
+                  <motion.img
+                    src={scenes[0].img}
+                    className="w-full h-full object-cover"
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                  {/* Dark Romantic Overlay */}
+                  <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                </motion.div>
+
+                <motion.p
+                  className="mt-10 text-center text-2xl md:text-4xl font-serif italic text-white px-6 leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1, duration: 1 }}
+                >
+                  {scenes[0].text}
+                </motion.p>
+              </div>
+            ) : scene < 4 ? (
               <ImageScene img={scenes[scene].img} text={scenes[scene].text} />
             ) : scene === 4 ? (
-              /* Gallery Scene as part of the flow */
               <Gallery />
             ) : (
               <Final />
@@ -165,12 +194,11 @@ function DaysCounter() {
   useEffect(() => {
     const start = new Date("2025-04-17");
     const now = new Date();
-    // Use Math.abs ensure no negative days if clock is slightly off
     const diff = Math.max(0, Math.floor((now - start) / (1000 * 60 * 60 * 24)));
 
     let current = 0;
-    const duration = 2000; // 2 seconds to complete the count
-    const increment = Math.max(1, Math.floor(diff / (duration / 30))); // calculation for smooth scrolling
+    const duration = 2000;
+    const increment = Math.max(1, Math.floor(diff / (duration / 30)));
 
     const interval = setInterval(() => {
       current += increment;
@@ -202,6 +230,34 @@ function DaysCounter() {
   );
 }
 
+/* Floating Hearts Background Background Effect */
+function FloatingHearts({ count = 8 }) {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(count)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-pink-500 opacity-20"
+          initial={{ y: "110%" }}
+          animate={{ y: "-10%" }}
+          transition={{ 
+            duration: 6 + Math.random() * 4, 
+            repeat: Infinity,
+            delay: Math.random() * 5,
+            ease: "linear"
+          }}
+          style={{ 
+            left: `${Math.random() * 100}%`,
+            fontSize: `${Math.random() * 20 + 15}px`
+          }}
+        >
+          ❤️
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 /* Image Scene Component */
 function ImageScene({ img, text }) {
   return (
@@ -209,7 +265,7 @@ function ImageScene({ img, text }) {
       <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10 mb-12 w-full">
         <motion.img
           src={img}
-          className="w-full h-full object-cover shadow-inner"
+          className="w-full h-full object-cover"
           initial={{ scale: 1.4, filter: "blur(20px)" }}
           animate={{ scale: 1, filter: "blur(0px)" }}
           transition={{ duration: 2.5, ease: "easeOut" }}
@@ -228,7 +284,7 @@ function ImageScene({ img, text }) {
   );
 }
 
-/* Gallery Component (Snap Scroll Carousel) */
+/* Gallery Component */
 function Gallery() {
   return (
     <div className="w-full flex flex-col items-center pt-10 px-4">
@@ -254,7 +310,7 @@ function Gallery() {
   );
 }
 
-/* FINAL提案 (Proposal Climax) */
+/* Final Proposal Section */
 function Final() {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
