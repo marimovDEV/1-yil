@@ -6,166 +6,221 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [scene, setScene] = useState(0);
 
-  const audio1 = useRef(null); // song1: Asragin meni
-  const audio2 = useRef(null); // song2: Sen mening sirim
+  const audioRef = useRef(null); // song1: Asragin meni
 
   const start = () => {
-    if (audio1.current) {
-      audio1.current.muted = false;
-      audio1.current.volume = 0.4;
-      audio1.current.play().catch(e => console.log("Audio blocked:", e));
+    if (audioRef.current) {
+      audioRef.current.muted = false;
+      audioRef.current.volume = 0.4;
+      audioRef.current.play().catch(e => console.log("Audio blocked:", e));
     }
     setStarted(true);
   };
 
   const next = () => {
-    if (scene === 3) switchMusic();
     setScene(scene + 1);
+    
+    // Confetti on transitions for WOW effect
+    if (scene === 3) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#ff1d8e", "#ffd700", "#ffffff"],
+      });
+    }
   };
 
-  const switchMusic = () => {
-    const a1 = audio1.current;
-    const a2 = audio2.current;
-    if (!a1 || !a2) return;
+  const scenes = [
+    { img: "/img1.jpg", text: "Hammasi shu kundan boshlangan edi..." },
+    { img: "/img2.jpg", text: "Senga yozgan birinchi xabarimni hali ham eslayman..." },
+    { img: "/img3.jpg", text: "Biz ko‘p kuldik, ko‘p xotiralar yig‘dik..." },
+    { img: "/img4.jpg", text: "Ba'zida qiyin bo‘ldi, lekin hech qachon taslim bo‘lmadik..." },
+    { img: "/img5.jpg", text: "Va bugun... biz hali ham birgamiz ❤️" }
+  ];
 
-    // Fade out a1
-    let vol1 = a1.volume;
-    const fadeOut = setInterval(() => {
-      if (vol1 > 0.05) {
-        vol1 -= 0.05;
-        a1.volume = Math.max(0, vol1);
-      } else {
-        clearInterval(fadeOut);
-        a1.pause();
+  if (!started) {
+    return (
+      <div className="h-screen flex flex-col justify-center items-center bg-black text-white text-center px-6 selection:bg-pink-500/30 overflow-hidden relative">
+        <motion.div
+           initial={{ opacity: 0, scale: 0.9 }}
+           animate={{ opacity: 1, scale: 1 }}
+           transition={{ duration: 1.5 }}
+           className="z-10 relative"
+        >
+          <p className="text-pink-200/50 mb-3 uppercase tracking-[0.4em] text-[10px] font-bold">
+            2025.04.17 dan beri...
+          </p>
+
+          <DaysCounter />
+
+          <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
+            Barchin bilan o‘tgan har bir kun — men uchun alohida e'tibor ❤️
+          </p>
+
+          <motion.button 
+            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(219,39,119,0.5)" }}
+            whileTap={{ scale: 0.95 }}
+            onClick={start} 
+            className="mt-14 bg-pink-600 hover:bg-pink-500 px-12 py-4 rounded-2xl text-lg font-black tracking-widest uppercase transition-all duration-300"
+          >
+            Davom et ❤️
+          </motion.button>
+        </motion.div>
+
+        {/* PERSISTENT AUDIO ELEMENT */}
+        <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
+
+        {/* Subtle Background Hearts (Intro Only) */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ 
+                opacity: [0, 0.4, 0], 
+                y: "-100%",
+                x: [0, Math.random() * 50 - 25] 
+              }}
+              transition={{
+                duration: Math.random() * 10 + 10,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+                ease: "linear"
+              }}
+              className="absolute text-pink-500"
+              style={{
+                left: Math.random() * 100 + "%",
+                top: "110%",
+                fontSize: Math.random() * 20 + 10 + "px"
+              }}
+            >
+              ❤️
+            </motion.div>
+          ))}
+        </div>
         
-        // Fade in a2
-        a2.volume = 0;
-        a2.play().catch(e => console.log("Audio 2 blocked:", e));
-        let vol2 = 0;
-        const fadeIn = setInterval(() => {
-          if (vol2 < 0.5) {
-            vol2 += 0.05;
-            a2.volume = Math.min(0.5, vol2);
-          } else {
-            clearInterval(fadeIn);
-          }
-        }, 200);
-      }
-    }, 200);
-  };
+        {/* Ambient background glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.2),transparent_70%)] pointer-events-none" />
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30">
-      
-      {/* PERSISTENT AUDIO ELEMENTS */}
-      <audio ref={audio1} src="/song1.mp3" loop preload="auto" />
-      <audio ref={audio2} src="/song2.mp3" loop preload="auto" />
+    <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30 relative">
+      <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
 
-      <AnimatePresence mode="wait">
-        {!started ? (
-          <motion.div 
-            key="intro"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, filter: "blur(20px)" }}
-            transition={{ duration: 1 }}
-            className="h-screen w-full flex flex-col justify-center items-center text-center px-6 relative"
-          >
-            <TypingText text="Bugun biz 1 yil bo‘ldik..." />
-            
-            <motion.button 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 2, duration: 1 }}
-              onClick={start} 
-              className="mt-12 bg-pink-600 hover:bg-pink-500 px-10 py-4 rounded-2xl text-xl font-bold shadow-[0_10px_40px_rgba(219,39,119,0.3)] transition-all active:scale-95"
-            >
-              Bos ❤️
-            </motion.button>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.1),transparent_70%)] pointer-events-none" />
-          </motion.div>
-        ) : (
-          <motion.div 
-            key="experience"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="w-full h-screen flex flex-col items-center justify-center relative"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={scene}
-                initial={{ opacity: 0, x: 100, filter: "blur(20px)" }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, x: -100, filter: "blur(20px)" }}
-                transition={{ duration: 0.8, ease: "anticipate" }}
-                className="w-full flex flex-col items-center justify-center pt-10"
-              >
-                {scene === 0 && <ImageScene img="/img1.jpg" text="Hammasi shu kundan boshlangan edi..." />}
-                {scene === 1 && <ImageScene img="/img2.jpg" text="Senga yozgan birinchi xabarimni hali ham eslayman..." />}
-                {scene === 2 && <RainScene />}
-                {scene === 3 && <Gallery />}
-                {scene === 4 && <Final />}
-              </motion.div>
-            </AnimatePresence>
+      {/* Persistent global particles */}
+      <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.04] z-0" />
 
-            {/* Navigation Button */}
-            {scene < 4 && (
-              <motion.button 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 2 }}
-                onClick={next} 
-                className="fixed bottom-12 z-50 bg-white/10 backdrop-blur-md px-8 py-3 rounded-full border border-white/20 text-xs tracking-[0.5em] uppercase font-bold hover:bg-white/20 transition-all active:scale-90"
-              >
-                Keyingi →
-              </motion.button>
+      <motion.div 
+        key="experience"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="w-full h-screen flex flex-col items-center justify-center relative z-10"
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={scene}
+            initial={{ opacity: 0, x: 50, filter: "blur(20px)" }}
+            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, x: -50, filter: "blur(20px)" }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full flex flex-col items-center justify-center"
+          >
+            {scene < 4 ? (
+              <ImageScene img={scenes[scene].img} text={scenes[scene].text} />
+            ) : scene === 4 ? (
+              /* Gallery Scene as part of the flow */
+              <Gallery />
+            ) : (
+              <Final />
             )}
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
 
-      {/* Subtle Ambient Background */}
+        {/* Global Navigation Button */}
+        {scene < 5 && (
+          <motion.button 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.5 }}
+            onClick={next} 
+            className="fixed bottom-12 z-50 bg-white/5 backdrop-blur-md px-10 py-3 rounded-full border border-white/10 text-[10px] tracking-[0.5em] uppercase font-black hover:bg-white/10 transition-all active:scale-90 text-pink-200/60"
+          >
+            Keyingi →
+          </motion.button>
+        )}
+      </div>
+
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.05),transparent_80%)] z-[-1]" />
     </div>
   );
 }
 
-/* Typing effect */
-function TypingText({ text }) {
-  const [display, setDisplay] = useState("");
+/* Dynamic Days Counter Component */
+function DaysCounter() {
+  const [days, setDays] = useState(0);
 
   useEffect(() => {
-    let i = 0;
-    const interval = setInterval(() => {
-      setDisplay(text.slice(0, i));
-      i++;
-      if (i > text.length) clearInterval(interval);
-    }, 70);
-    return () => clearInterval(interval);
-  }, [text]);
+    const start = new Date("2025-04-17");
+    const now = new Date();
+    // Use Math.abs ensure no negative days if clock is slightly off
+    const diff = Math.max(0, Math.floor((now - start) / (1000 * 60 * 60 * 24)));
 
-  return <h1 className="text-3xl md:text-5xl font-serif text-pink-50 drop-shadow-lg">{display}</h1>;
+    let current = 0;
+    const duration = 2000; // 2 seconds to complete the count
+    const increment = Math.max(1, Math.floor(diff / (duration / 30))); // calculation for smooth scrolling
+
+    const interval = setInterval(() => {
+      current += increment;
+      if (current >= diff) {
+        setDays(diff);
+        clearInterval(interval);
+      } else {
+        setDays(current);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 1 }}
+      className="relative"
+    >
+      <h1 className="text-6xl md:text-8xl font-black text-pink-500 drop-shadow-[0_0_30px_rgba(236,72,153,0.8)] animate-pulse mb-2">
+        {days}
+      </h1>
+      <span className="text-2xl md:text-3xl font-serif text-white opacity-90 tracking-widest italic font-light">
+        kun ❤️
+      </span>
+    </motion.div>
+  );
 }
 
-/* Image Scene */
+/* Image Scene Component */
 function ImageScene({ img, text }) {
   return (
-    <div className="text-center px-4 w-full max-w-md">
-      <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] border border-white/10 mb-10">
+    <div className="text-center px-4 w-full max-w-md flex flex-col items-center">
+      <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10 mb-12 w-full">
         <motion.img
           src={img}
-          className="w-full h-full object-cover"
-          initial={{ scale: 1.3, filter: "blur(10px)" }}
+          className="w-full h-full object-cover shadow-inner"
+          initial={{ scale: 1.4, filter: "blur(20px)" }}
           animate={{ scale: 1, filter: "blur(0px)" }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          transition={{ duration: 2.5, ease: "easeOut" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
       </div>
       <motion.p 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 1 }}
-        className="text-xl md:text-2xl font-serif italic text-pink-100/90 leading-relaxed px-6"
+        transition={{ delay: 1, duration: 1.5 }}
+        className="text-2xl md:text-3xl font-serif italic text-pink-50/90 leading-relaxed px-4 drop-shadow-lg"
       >
         {text}
       </motion.p>
@@ -173,75 +228,33 @@ function ImageScene({ img, text }) {
   );
 }
 
-/* Rain Scene (Premium CSS Rain) */
-function RainScene() {
+/* Gallery Component (Snap Scroll Carousel) */
+function Gallery() {
   return (
-    <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
+    <div className="w-full flex flex-col items-center pt-10 px-4">
       <motion.p 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 2 }}
-        className="text-center px-10 text-2xl md:text-3xl font-serif italic text-gray-300 relative z-10 drop-shadow-2xl"
+        className="mb-10 text-pink-200/40 uppercase tracking-[0.8em] text-[10px] font-black"
       >
-        "Hammasi ham oson bo‘lmadi..."
+        Bizning shirin xotiralarimiz
       </motion.p>
-
-      {/* Visual Rain Drops */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-        {[...Array(60)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ y: -100 }}
-            animate={{ y: "100vh" }}
-            transition={{
-              duration: Math.random() * 0.5 + 0.5,
-              repeat: Infinity,
-              ease: "linear",
-              delay: Math.random() * 2,
-            }}
-            className="absolute bg-white/40 w-[1px] h-12"
-            style={{
-              left: Math.random() * 100 + "%",
-              filter: "blur(1px)",
-            }}
-          />
-        ))}
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black pointer-events-none" />
-    </div>
-  );
-}
-
-/* Gallery (Snap Scroll Carousel) */
-function Gallery() {
-  return (
-    <div className="w-full flex flex-col items-center">
-      <motion.h2 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-10 text-pink-200/50 uppercase tracking-[0.6em] text-[10px] font-bold"
-      >
-        Eng baxtli lahzalar
-      </motion.h2>
       <div className="flex overflow-x-auto space-x-6 px-10 w-full snap-x no-scrollbar pb-10">
         {["/img1.jpg", "/img2.jpg", "/img3.jpg", "/img4.jpg", "/img5.jpg"].map((img, i) => (
-          <motion.div 
+          <div 
             key={i}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.2 }}
-            className="flex-shrink-0 w-72 aspect-[4/5] bg-white/5 backdrop-blur-md rounded-3xl overflow-hidden snap-center border border-white/10 shadow-2xl"
+            className="flex-shrink-0 w-[80%] md:w-80 aspect-[4/5] bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden snap-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
           >
-            <img src={img} className="w-full h-full object-cover" alt="Gallery" />
-          </motion.div>
+            <img src={img} className="w-full h-full object-cover" alt="Memory" />
+          </div>
         ))}
       </div>
-      <p className="mt-4 text-xs text-white/30 animate-pulse">O'ngga suring →</p>
+      <p className="mt-6 text-[10px] text-white/20 uppercase tracking-[0.3em] font-light italic animate-pulse">O'ngga suring →</p>
     </div>
   );
 }
 
-/* FINAL提案 (ULTRA CLIMAX) */
+/* FINAL提案 (Proposal Climax) */
 function Final() {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
@@ -249,10 +262,11 @@ function Final() {
   useEffect(() => {
     if (opened) {
       confetti({
-        particleCount: 150,
-        spread: 70,
+        particleCount: 200,
+        spread: 100,
         origin: { y: 0.6 },
         colors: ["#ff1d8e", "#ffd700", "#ffffff"],
+        ticks: 200
       });
     }
   }, [opened]);
@@ -262,81 +276,92 @@ function Final() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, type: "spring" }}
         className="text-center px-6"
       >
        <motion.div 
-          animate={{ scale: [1, 1.2, 1] }} 
+          animate={{ scale: [1, 1.3, 1], filter: ["drop-shadow(0 0 20px rgba(236,72,153,0.5))", "drop-shadow(0 0 50px rgba(236,72,153,1))", "drop-shadow(0 0 20px rgba(236,72,153,0.5))"] }} 
           transition={{ repeat: Infinity, duration: 1 }}
-          className="text-9xl mb-10"
+          className="text-[12rem] mb-14"
         >
           ❤️
         </motion.div>
-        <h1 className="text-5xl font-serif font-black mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-pink-500">
+        <h1 className="text-6xl md:text-7xl font-serif font-black mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white via-pink-100 to-pink-500 tracking-tight">
           U ROZI BO'LDI!
         </h1>
-        <p className="text-xl text-pink-200 opacity-80 italic">Abadiy birga bo'lamiz...</p>
+        <p className="text-2xl text-pink-200 opacity-80 italic italic tracking-widest uppercase">Abadiy birga bo'lamiz...</p>
       </motion.div>
     );
   }
 
   return (
     <div className="relative h-screen w-full flex flex-col items-center justify-center px-6 pb-20">
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!opened ? (
           <motion.div
             key="gift"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0, filter: "blur(20px)" }}
+            transition={{ duration: 0.8, type: "spring" }}
             onClick={() => setOpened(true)}
-            className="cursor-pointer group relative"
+            className="cursor-pointer group relative flex flex-col items-center"
           >
             <motion.div
-              animate={{ rotate: [-2, 2, -2] }}
+              animate={{ 
+                rotate: [-4, 4, -4],
+                y: [0, -15, 0]
+              }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="text-[120px] filter drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_50px_rgba(255,29,142,0.6)] transition-all"
+              className="text-[140px] filter drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] group-hover:drop-shadow-[0_0_60px_rgba(255,29,142,0.8)] transition-all duration-500"
             >
               🎁
             </motion.div>
-            <p className="text-center text-[10px] uppercase tracking-[0.5em] text-pink-500 mt-4 animate-bounce">Oching ❤️</p>
+            <p className="text-center text-[11px] uppercase tracking-[0.8em] text-pink-500 font-black mt-8 animate-bounce">Oching ❤️</p>
           </motion.div>
         ) : (
           <motion.div
             key="ring"
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            className="flex flex-col items-center text-center"
+            initial={{ scale: 0, rotate: -40, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            transition={{ duration: 1.2, type: "spring", bounce: 0.4 }}
+            className="flex flex-col items-center text-center w-full"
           >
             <motion.div
               animate={{ 
-                y: [0, -20, 0],
-                rotate: [0, 5, -5, 0],
-                filter: ["drop-shadow(0 0 20px rgba(255,255,255,0.3))", "drop-shadow(0 0 60px rgba(255,215,0,0.8))", "drop-shadow(0 0 20px rgba(255,255,255,0.3))"]
+                y: [0, -30, 0],
+                rotate: [0, 10, -10, 0],
+                filter: ["drop-shadow(0 0 30px rgba(255,182,193,0.3))", "drop-shadow(0 0 70px rgba(255,215,0,0.9))", "drop-shadow(0 0 30px rgba(255,182,193,0.3))"]
               }}
-              transition={{ repeat: Infinity, duration: 3 }}
-              className="text-[140px] mb-6"
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="text-[160px] mb-10"
             >
               💍
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
+              transition={{ delay: 1, duration: 1.5 }}
+              className="w-full"
             >
-              <h1 className="text-4xl md:text-5xl font-serif font-black mb-8 leading-tight tracking-tighter">
-                Sen mening tunim, <br/> tundagi nurimsan ❤️
+              <h1 className="text-5xl md:text-7xl font-serif font-black mb-10 leading-tight tracking-tighter text-white drop-shadow-2xl">
+                Barchin, sen mening tunim, <br/> tundagi nurimsan ❤️
               </h1>
               
-              <p className="text-pink-200/60 mb-12 italic text-lg">Men bilan qolgan umringni o'tkazishga rozimisan?</p>
+              <p className="text-pink-100/70 mb-16 italic text-xl md:text-2xl font-light max-w-lg mx-auto leading-relaxed">
+                Men bilan qolgan butun umringni o'tkazishga rozimisan azizam?
+              </p>
 
-              <div className="flex gap-4 justify-center">
-                <button 
+              <div className="flex gap-6 justify-center">
+                <motion.button 
+                  whileHover={{ scale: 1.1, backgroundColor: "#ec4899" }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setLoved(true)}
-                  className="bg-white text-black px-12 py-4 rounded-2xl font-black text-xl hover:bg-pink-500 hover:text-white transition-all shadow-2xl"
+                  className="bg-white text-black px-16 py-5 rounded-[2rem] font-black text-2xl tracking-widest shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 active:bg-pink-600"
                 >
                   HA ❤️
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
