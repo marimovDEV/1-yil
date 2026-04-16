@@ -180,7 +180,7 @@ export default function App() {
             Keyingi →
           </motion.button>
         )}
-      </div>
+      </motion.div>
 
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.05),transparent_80%)] z-[-1]" />
     </div>
