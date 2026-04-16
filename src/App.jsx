@@ -6,14 +6,13 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [scene, setScene] = useState(0);
 
-  const audio1Ref = useRef(null); // song1: Asragin meni
-  const audio2Ref = useRef(null); // song2: Sen mening tunim
+  const audioRef = useRef(null); // song1: Asragin meni
 
   const start = () => {
-    if (audio1Ref.current) {
-      audio1Ref.current.muted = false;
-      audio1Ref.current.volume = 0.4;
-      audio1Ref.current.play().catch(e => console.log("Audio 1 blocked:", e));
+    if (audioRef.current) {
+      audioRef.current.muted = false;
+      audioRef.current.volume = 0.4;
+      audioRef.current.play().catch(e => console.log("Audio blocked:", e));
     }
     setStarted(true);
   };
@@ -22,44 +21,11 @@ export default function App() {
     setScene(scene + 1);
   };
 
-  // Music Switch Logic: song1 -> song2
-  const switchMusic = () => {
-    const a1 = audio1Ref.current;
-    const a2 = audio2Ref.current;
-    if (!a1 || !a2) return;
-
-    // Fade out a1
-    let vol1 = a1.volume;
-    const fadeOut = setInterval(() => {
-      if (vol1 > 0.05) {
-        vol1 -= 0.05;
-        a1.volume = Math.max(0, vol1);
-      } else {
-        clearInterval(fadeOut);
-        a1.pause();
-        
-        // Fade in a2
-        a2.volume = 0;
-        a2.play().catch(e => console.log("Audio 2 blocked:", e));
-        let vol2 = 0;
-        const fadeIn = setInterval(() => {
-          if (vol2 < 0.5) {
-            vol2 += 0.05;
-            a2.volume = Math.min(0.5, vol2);
-          } else {
-            clearInterval(fadeIn);
-          }
-        }, 200);
-      }
-    }, 200);
-  };
-
   return (
     <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30 relative">
       
-      {/* PERSISTENT AUDIO ELEMENTS */}
-      <audio ref={audio1Ref} src="/song1.mp3" loop preload="auto" />
-      <audio ref={audio2Ref} src="/song2.mp3" loop preload="auto" />
+      {/* PERSISTENT AUDIO ELEMENT */}
+      <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
 
       {/* Global Background Elements */}
       <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.04] z-0" />
@@ -78,7 +44,7 @@ export default function App() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
               <p className="text-pink-200/50 mb-3 uppercase tracking-[0.4em] text-[10px] font-bold">2025.04.17 dan beri...</p>
               <DaysCounter />
-              <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-sm">
+              <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
                 Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
               </p>
               <motion.button 
@@ -143,7 +109,7 @@ export default function App() {
 
               {scene === 4 && (
                 <motion.div key="scene5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full w-full">
-                  <FinalProposal Climax onMusicSwitch={switchMusic} />
+                  <FinalProposal />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -227,19 +193,18 @@ function PremiumGallery({ onNext }) {
 }
 
 /* FINAL提案 (Proposal Climax) */
-function FinalProposal({ onMusicSwitch }) {
+function FinalProposal() {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
 
   useEffect(() => {
     if (opened) {
-      onMusicSwitch(); // song1 -> song2 switch
       confetti({
         particleCount: 200, spread: 100, origin: { y: 0.6 },
         colors: ["#ff1d8e", "#ffd700", "#ffffff"],
       });
     }
-  }, [opened, onMusicSwitch]);
+  }, [opened]);
 
   if (loved) {
     return (
@@ -279,7 +244,7 @@ function FinalProposal({ onMusicSwitch }) {
             >💍</motion.div>
             
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="text-4xl md:text-6xl font-serif font-black mb-10 leading-tight tracking-tighter text-white">
-              Barchin… men seni tanlaganman…<br />va har kuni yana tanlashda davom etaman ❤️
+              Barchin… men seni tanlaganman…<br />va har kuni yana tanlashda veg am etaman ❤️
             </motion.h1>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
