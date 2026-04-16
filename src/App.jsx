@@ -5,32 +5,45 @@ import confetti from "canvas-confetti";
 export default function App() {
   const [started, setStarted] = useState(false);
   const [scene, setScene] = useState(0);
-
   const audioRef = useRef(null);
 
-  // Mobile Audio Unblocker
+  // Super Resilient Mobile Audio Logic
+  useEffect(() => {
+    // Create audio instance on mount for pre-warm
+    const audio = new Audio("/song1.mp3");
+    audio.loop = true;
+    audio.preload = "auto";
+    audioRef.current = audio;
+
+    // Cleanup
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   const start = () => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.muted = false;
-      audio.volume = 0.5;
+    if (audioRef.current) {
+      audioRef.current.muted = false;
+      audioRef.current.volume = 0.5;
       
-      // Attempt play with promise handling
-      const playPromise = audio.play();
+      const playPromise = audioRef.current.play();
       
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log("Playback started");
-        }).catch(err => {
-          console.log("Playback blocked, retrying on next touch...", err);
-          // Fallback: try playing again if blocked
-          const retryPlay = () => {
-            audio.play();
-            window.removeEventListener('click', retryPlay);
-            window.removeEventListener('touchstart', retryPlay);
+        playPromise.catch(error => {
+          console.log("Playback failed, adding fallback listener:", error);
+          // Fallback: unblock on next touch
+          const unlock = () => {
+            if (audioRef.current) {
+              audioRef.current.play();
+            }
+            window.removeEventListener("touchstart", unlock);
+            window.removeEventListener("click", unlock);
           };
-          window.addEventListener('click', retryPlay);
-          window.addEventListener('touchstart', retryPlay);
+          window.addEventListener("touchstart", unlock);
+          window.addEventListener("click", unlock);
         });
       }
     }
@@ -44,20 +57,6 @@ export default function App() {
   return (
     <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30 relative">
       
-      {/* 
-          CRITICAL FOR MOBILE: 
-          1. muted={false} explicitly
-          2. preload="auto"
-          3. Single persistent tag
-      */}
-      <audio 
-        ref={audioRef} 
-        src="/song1.mp3" 
-        loop 
-        preload="auto" 
-        playsInline
-      />
-
       {/* Global Background Elements */}
       <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.04] z-0" />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.05),transparent_80%)] z-[-1]" />
@@ -78,17 +77,21 @@ export default function App() {
               <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
                 Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
               </p>
+              
+              <p className="mt-4 text-[10px] text-white/20 uppercase tracking-widest italic animate-pulse">
+                Eng yaxshi natija uchun ovozni yoqing 🔊
+              </p>
+
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(219,39,119,0.5)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={start} 
-                className="mt-14 bg-pink-600 hover:bg-pink-500 px-12 py-4 rounded-2xl text-lg font-black tracking-widest uppercase transition-all duration-300"
+                className="mt-14 bg-pink-600 hover:bg-pink-500 px-12 py-4 rounded-2xl text-lg font-black tracking-widest uppercase transition-all duration-300 shadow-[0_0_20px_rgba(236,72,153,0.3)]"
               >
                 Davom et ❤️
               </motion.button>
             </motion.div>
             <FloatingHearts count={10} />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,0,60,0.2),transparent_70%)] pointer-events-none" />
           </motion.div>
         ) : (
           <motion.div key="experience" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-screen relative z-10">
