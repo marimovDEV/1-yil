@@ -7,15 +7,12 @@ export default function App() {
   const [scene, setScene] = useState(0);
   const audioRef = useRef(null);
 
-  // Super Resilient Mobile Audio Logic
   useEffect(() => {
-    // Create audio instance on mount for pre-warm
     const audio = new Audio("/song1.mp3");
     audio.loop = true;
     audio.preload = "auto";
     audioRef.current = audio;
 
-    // Cleanup
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -28,17 +25,11 @@ export default function App() {
     if (audioRef.current) {
       audioRef.current.muted = false;
       audioRef.current.volume = 0.5;
-      
       const playPromise = audioRef.current.play();
-      
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.log("Playback failed, adding fallback listener:", error);
-          // Fallback: unblock on next touch
+        playPromise.catch(() => {
           const unlock = () => {
-            if (audioRef.current) {
-              audioRef.current.play();
-            }
+            if (audioRef.current) audioRef.current.play();
             window.removeEventListener("touchstart", unlock);
             window.removeEventListener("click", unlock);
           };
@@ -56,8 +47,6 @@ export default function App() {
 
   return (
     <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30 relative">
-      
-      {/* Global Background Elements */}
       <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.04] z-0" />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,80,0.05),transparent_80%)] z-[-1]" />
 
@@ -72,13 +61,15 @@ export default function App() {
              className="h-screen w-full flex flex-col justify-center items-center text-center px-6 relative z-10"
           >
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-              <p className="text-pink-200/50 mb-3 uppercase tracking-[0.4em] text-[10px] font-bold">2025.04.17 dan beri...</p>
+              <p className="text-pink-200/50 mb-4 uppercase tracking-[0.4em] text-[10px] font-black">
+                2025.04.17… shu kundan beri hayotim o‘zgardi.
+              </p>
               <DaysCounter />
               <p className="mt-8 text-xl md:text-2xl font-serif italic text-pink-50/80 leading-relaxed max-w-sm">
                 Barchin bilan o‘tgan har bir kun — men uchun alohida ❤️
               </p>
               
-              <p className="mt-4 text-[10px] text-white/20 uppercase tracking-widest italic animate-pulse">
+              <p className="mt-6 text-[10px] text-white/20 uppercase tracking-widest italic animate-pulse">
                 Eng yaxshi natija uchun ovozni yoqing 🔊
               </p>
 
@@ -97,58 +88,79 @@ export default function App() {
           <motion.div key="experience" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-screen relative z-10">
             <AnimatePresence mode="wait">
               {scene === 0 && (
-                <motion.div key="scene1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, filter: "blur(20px)" }} className="relative flex flex-col items-center justify-center min-h-screen w-full px-6 overflow-hidden">
+                /* SCENE 1: MEMORY */
+                <motion.div key="sc1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, filter: "blur(20px)" }} className="relative flex flex-col items-center justify-center min-h-screen w-full px-6 overflow-hidden">
                   <FloatingHearts count={8} />
-                  <motion.div className="relative max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <motion.div className="relative max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <motion.img src="/img1.jpg" className="w-full h-full object-cover" initial={{ scale: 1.3 }} animate={{ scale: 1 }} transition={{ duration: 1.5, ease: "easeOut" }} />
                     <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                   </motion.div>
-                  <motion.p className="mt-10 text-center text-xl md:text-2xl font-serif italic text-white px-4 leading-relaxed tracking-wide" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
+                  <motion.p className="mt-10 text-center text-xl md:text-2xl font-serif italic text-white px-4 leading-relaxed" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
                     Barchin…<br />balki bu eng birinchi rasm emasdir,<br />lekin men uchun eng qadrli onlardan biri ❤️
                   </motion.p>
                 </motion.div>
               )}
 
               {scene === 1 && (
-                <motion.div key="scene2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
+                /* SCENE 2: CHAT */
+                <motion.div key="sc2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
                   <motion.img src="/img2.jpg" className="w-64 md:w-80 rounded-[2rem] mb-10 shadow-2xl border border-white/10" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} />
-                  <div className="flex flex-col space-y-4 w-full max-w-xs">
-                    <motion.div className="bg-gray-800 p-4 rounded-2xl rounded-tl-none self-start text-sm md:text-base border border-white/5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>Shatb tapdiz instamni</motion.div>
-                    <motion.div className="bg-pink-600 p-4 rounded-2xl rounded-tr-none self-end text-sm md:text-base shadow-lg" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.2 }}>ohsham danishdiq masmi axi san bilan</motion.div>
+                  <div className="flex flex-col space-y-4 w-full max-w-xs mb-8">
+                    <motion.div className="bg-gray-800 p-4 rounded-2xl rounded-tl-none self-start text-sm border border-white/5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>Shatb tapdiz instamni</motion.div>
+                    <motion.div className="bg-pink-600 p-4 rounded-2xl rounded-tr-none self-end text-sm shadow-lg" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.2 }}>ohsham danishdiq masmi axi san bilan</motion.div>
                   </div>
-                  <motion.p className="mt-10 text-center text-xl md:text-2xl font-serif italic text-pink-50/90 px-4 leading-relaxed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
-                    Barchin… o‘sha payt oddiy yozishma edi, lekin bilmagandim — hammasi shundan boshlanishini…
+                  <motion.p className="text-center text-lg md:text-xl font-serif italic text-pink-50/90 px-4 leading-relaxed max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
+                    Barchin… boshida bunday bo‘lishini o‘ylamagandim.<br/>Oddiy yozishma edi… lekin sekin-sekin hammasi o‘zgarib ketdi.
                   </motion.p>
                 </motion.div>
               )}
 
               {scene === 2 && (
-                <PremiumGallery onNext={next} />
+                /* SCENE 3: HAPPY (GALLERY) */
+                <PremiumGallery onNext={next} customText="Sen bilan kulgan paytlarim — eng esda qoladigan onlarim bo‘ldi. Shu lahzalar uchun hammasiga arziydi ❤️" />
               )}
 
               {scene === 3 && (
-                <motion.div key="scene4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 overflow-hidden">
+                /* SCENE 4: TRIALS */
+                <motion.div key="sc4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 overflow-hidden">
                   <Rain />
-                  <motion.div className="relative max-w-sm aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.9)] border border-white/10 z-10">
+                  <motion.div className="relative max-w-sm aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 z-10">
                     <motion.img src="/img4.jpg" className="w-full h-full object-cover" initial={{ scale: 1.2 }} animate={{ scale: 1 }} transition={{ duration: 3 }} />
                     <div className="absolute inset-0 bg-black/70 rounded-2xl" />
                   </motion.div>
-                  <motion.p className="mt-10 text-center text-xl md:text-3xl font-serif italic text-gray-300 px-6 leading-relaxed relative z-20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
-                    Barchin… hammasi har doim ham oson bo‘lmagan,<br />lekin seni yo‘qotish hech qachon variant bo‘lmagan ❤️
-                  </motion.p>
+                  <motion.div className="mt-10 text-center text-lg md:text-xl font-serif italic text-gray-300 px-6 leading-relaxed relative z-20 space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
+                    <p>Barchin… bilaman, ba’zida seni hafa qilaman.</p>
+                    <p>Lekin hech qachon seni yo‘qotishni xohlamaganman.</p>
+                    <p>Qiyin paytlar ham bo‘ldi… lekin men baribir seni tanlaganman ❤️</p>
+                  </motion.div>
                 </motion.div>
               )}
 
               {scene === 4 && (
-                <motion.div key="scene5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full w-full">
-                  <FinalProposal />
+                /* SCENE 5: CONFESSION [NEW] */
+                <motion.div key="sc5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center px-10 overflow-hidden">
+                  <AnimatePresence mode="wait">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.15 }} className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/img1.jpg')" }} />
+                  </AnimatePresence>
+                  <motion.div className="relative z-10 text-center space-y-8 max-w-xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
+                    <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-pink-50">"Boshida seni bunchalik sevib qolaman deb o‘ylamagandim…"</p>
+                    <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-pink-50">"Lekin vaqt o‘tgan sari bu his yanada kuchaydi. Men sen uchun ko‘p narsaga tayyorman."</p>
+                    <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-pink-50 underline decoration-pink-500/50 underline-offset-8">"Ba’zida xato qilaman… lekin seni yaxshi ko‘rishim hech qachon o‘zgarmaydi ❤️"</p>
+                  </motion.div>
+                  <FloatingHearts count={6} />
+                </motion.div>
+              )}
+
+              {scene === 5 && (
+                /* SCENE 6: FINAL */
+                <motion.div key="sc6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full w-full">
+                  <FinalProposal customText="Barchin… shuncha narsadan keyin ham biz birgamiz. Va men seni tanlaganman…" />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Global Navigation Button */}
-            {scene !== 2 && scene < 4 && (
+            {scene < 5 && (
               <motion.button 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }} onClick={next} 
                 className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 bg-white/5 backdrop-blur-xl px-10 py-3 rounded-full border border-white/10 text-[10px] tracking-[0.6em] uppercase font-black hover:bg-white/10 transition-all active:scale-90 text-pink-200/60 shadow-2xl"
@@ -163,7 +175,7 @@ export default function App() {
   );
 }
 
-function PremiumGallery({ onNext }) {
+function PremiumGallery({ onNext, customText }) {
   const images = ["/img1.jpg", "/img2.jpg", "/img3.jpg"];
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef(null);
@@ -172,68 +184,35 @@ function PremiumGallery({ onNext }) {
     if (!containerRef.current) return;
     const { scrollLeft, offsetWidth } = containerRef.current;
     const index = Math.round(scrollLeft / (offsetWidth * 0.75));
-    if (index !== activeIndex && index < images.length) {
-      setActiveIndex(index);
-    }
+    if (index !== activeIndex && index < images.length) setActiveIndex(index);
   };
 
   return (
     <motion.div key="premiumGallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
       <AnimatePresence mode="wait">
-        <motion.div 
-          key={activeIndex} 
-          initial={{ opacity: 0 }} animate={{ opacity: 0.3 }} exit={{ opacity: 0 }} transition={{ duration: 1 }}
-          className="absolute inset-0 bg-cover bg-center blur-[100px] z-0"
-          style={{ backgroundImage: `url(${images[activeIndex]})` }}
-        />
+        <motion.div key={activeIndex} initial={{ opacity: 0 }} animate={{ opacity: 0.3 }} exit={{ opacity: 0 }} transition={{ duration: 1 }} className="absolute inset-0 bg-cover bg-center blur-[100px] z-0" style={{ backgroundImage: `url(${images[activeIndex]})` }} />
       </AnimatePresence>
-
-      <motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 mb-10 text-center px-10 text-xl md:text-2xl font-serif italic text-pink-100/90 drop-shadow-lg">
-        Barchin… bu lahzalar — mening eng baxtli xotiralarim ❤️
-      </motion.h2>
-
-      <div 
-        ref={containerRef} onScroll={handleScroll}
-        className="relative z-10 flex space-x-6 overflow-x-auto px-[20%] w-full snap-x snap-mandatory no-scrollbar py-10"
-      >
+      <motion.p initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 mb-10 text-center px-10 text-lg md:text-xl font-serif italic text-pink-100/90 drop-shadow-lg max-w-sm">
+        {customText}
+      </motion.p>
+      <div ref={containerRef} onScroll={handleScroll} className="relative z-10 flex space-x-6 overflow-x-auto px-[20%] w-full snap-x snap-mandatory no-scrollbar py-10">
         {images.map((img, i) => (
-          <motion.div 
-            key={i} 
-            className={`flex-shrink-0 w-64 md:w-80 aspect-[4/5] rounded-[2.5rem] overflow-hidden snap-center transition-all duration-700 ease-out border border-white/10 shadow-2xl ${
-              i === activeIndex ? "scale-100 opacity-100 blur-0 shadow-pink-500/20" : "scale-90 opacity-40 blur-sm brightness-50"
-            }`}
-          >
+          <motion.div key={i} className={`flex-shrink-0 w-64 md:w-80 aspect-[4/5] rounded-[2.5rem] overflow-hidden snap-center transition-all duration-700 ease-out border border-white/10 shadow-2xl ${i === activeIndex ? "scale-100 opacity-100 blur-0" : "scale-90 opacity-40 blur-sm brightness-50"}`}>
             <img src={img} className="w-full h-full object-cover" alt="Gallery" />
           </motion.div>
         ))}
       </div>
-
-      <motion.p animate={{ x: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="relative z-10 mt-6 text-[10px] text-white/30 tracking-[0.4em] uppercase font-light italic text-center">
-        O‘ngga suring →
-      </motion.p>
-
-      <motion.button 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }} onClick={onNext} 
-        className="relative z-10 mt-12 bg-white/5 backdrop-blur-xl px-10 py-3 rounded-full border border-white/10 text-[10px] tracking-[0.6em] uppercase font-black hover:bg-white/10 transition-all active:scale-90 text-pink-200/60 shadow-2xl"
-      >
-        Keyingi →
-      </motion.button>
-      <FloatingHearts count={5} />
+      <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }} onClick={onNext} className="relative z-10 mt-12 bg-white/5 backdrop-blur-xl px-10 py-3 rounded-full border border-white/10 text-[10px] tracking-[0.6em] uppercase font-black hover:bg-white/10 transition-all active:scale-90 text-pink-200/60 shadow-2xl">Keyingi →</motion.button>
     </motion.div>
   );
 }
 
-function FinalProposal() {
+function FinalProposal({ customText }) {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
 
   useEffect(() => {
-    if (opened) {
-      confetti({
-        particleCount: 200, spread: 100, origin: { y: 0.6 },
-        colors: ["#ff1d8e", "#ffd700", "#ffffff"],
-      });
-    }
+    if (opened) confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ["#ff1d8e", "#ffd700", "#ffffff"] });
   }, [opened]);
 
   if (loved) {
@@ -241,7 +220,7 @@ function FinalProposal() {
       <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center h-screen text-center px-6">
        <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-9xl mb-14">❤️</motion.div>
         <h1 className="text-5xl md:text-7xl font-serif font-black mb-10 bg-clip-text text-transparent bg-gradient-to-b from-white to-pink-500">U ROZI BO'LDI!</h1>
-        <p className="text-2xl text-pink-200 opacity-80 uppercase tracking-widest italic font-light italic">Abadiy birga bo'lamiz...</p>
+        <p className="text-2xl text-pink-200 opacity-80 uppercase tracking-widest italic font-light italic text-center">Abadiy birga bo'lamiz...</p>
       </motion.div>
     );
   }
@@ -251,34 +230,24 @@ function FinalProposal() {
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-pink-500 blur-[150px] opacity-10 animate-pulse" />
       </div>
-
       <AnimatePresence mode="wait">
         {!opened ? (
           <motion.div key="gift" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ scale: 0, opacity: 0 }} className="z-10 flex flex-col items-center cursor-pointer group" onClick={() => setOpened(true)}>
-            <motion.div animate={{ scale: [1, 1.1, 1], rotate: [-2, 2, -2] }} transition={{ repeat: Infinity, duration: 2 }} className="text-[140px] drop-shadow-[0_0_60px_rgba(255,29,142,0.5)] transition-all group-hover:drop-shadow-[0_0_80px_rgba(255,29,142,0.8)]">🎁</motion.div>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-10 text-center px-10 text-lg md:text-xl font-serif italic text-pink-100/70 border-b border-white/10 pb-4">
-              Barchin… bu yerda senga aytmoqchi bo‘lgan gapim bor…
+            <motion.div animate={{ scale: [1, 1.1, 1], rotate: [-2, 2, -2] }} transition={{ repeat: Infinity, duration: 2 }} className="text-[140px] drop-shadow-[0_0_60px_rgba(255,29,142,0.5)]">🎁</motion.div>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-10 text-center px-10 text-lg md:text-xl font-serif italic text-pink-100/70 border-b border-white/10 pb-4 max-w-sm">
+              {customText}
             </motion.p>
             <p className="mt-6 text-[10px] uppercase tracking-[0.8em] text-pink-500 font-black animate-bounce">Oching ❤️</p>
           </motion.div>
         ) : (
           <motion.div key="ring" initial={{ scale: 0, rotate: -40, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ duration: 1, type: "spring", bounce: 0.4 }} className="z-10 flex flex-col items-center text-center">
-            <motion.div 
-              animate={{ 
-                y: [0, -30, 0], rotate: [0, 10, -10, 0], 
-                filter: ["drop-shadow(0 0 30px rgba(255,182,193,0.3))", "drop-shadow(0 0 80px rgba(255,215,0,0.9))", "drop-shadow(0 0 30px rgba(255,182,193,0.3))"] 
-              }} 
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} 
-              className="text-[160px] mb-10"
-            >💍</motion.div>
-            
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="text-4xl md:text-6xl font-serif font-black mb-10 leading-tight tracking-tighter text-white">
-              Barchin… men seni tanlaganman…<br />va har kuni yana tanlashda davom etaman ❤️
+            <motion.div animate={{ y: [0, -30, 0], rotate: [0, 10, -10, 0], filter: ["drop-shadow(0 0 30px rgba(255,182,193,0.3))", "drop-shadow(0 0 80px rgba(255,215,0,0.9))", "drop-shadow(0 0 30px rgba(255,182,193,0.3))"] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="text-[160px] mb-10">💍</motion.div>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="text-3xl md:text-5xl font-serif font-black mb-10 leading-tight text-white max-w-sm">
+              va har kuni yana tanlashda davom etaman ❤️
             </motion.h1>
-
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
               <p className="text-pink-100/70 mb-16 italic text-lg md:text-2xl font-light italic">Men bilan qolgan butun umringni o'tkazishga rozimisan?</p>
-              <button onClick={() => setLoved(true)} className="bg-white text-black px-16 py-5 rounded-full font-black text-2xl tracking-widest shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-all hover:bg-pink-600 hover:text-white active:scale-95">HA ❤️</button>
+              <button onClick={() => setLoved(true)} className="bg-white text-black px-16 py-5 rounded-full font-black text-2xl tracking-widest shadow-2xl hover:bg-pink-600 hover:text-white">HA ❤️</button>
             </motion.div>
           </motion.div>
         )}
