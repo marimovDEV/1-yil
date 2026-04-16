@@ -6,13 +6,33 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [scene, setScene] = useState(0);
 
-  const audioRef = useRef(null); // song1: Asragin meni
+  const audioRef = useRef(null);
 
+  // Mobile Audio Unblocker
   const start = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = false;
-      audioRef.current.volume = 0.4;
-      audioRef.current.play().catch(e => console.log("Audio blocked:", e));
+    const audio = audioRef.current;
+    if (audio) {
+      audio.muted = false;
+      audio.volume = 0.5;
+      
+      // Attempt play with promise handling
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log("Playback started");
+        }).catch(err => {
+          console.log("Playback blocked, retrying on next touch...", err);
+          // Fallback: try playing again if blocked
+          const retryPlay = () => {
+            audio.play();
+            window.removeEventListener('click', retryPlay);
+            window.removeEventListener('touchstart', retryPlay);
+          };
+          window.addEventListener('click', retryPlay);
+          window.addEventListener('touchstart', retryPlay);
+        });
+      }
     }
     setStarted(true);
   };
@@ -24,8 +44,19 @@ export default function App() {
   return (
     <div className="bg-black text-white min-h-screen flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-pink-500/30 relative">
       
-      {/* PERSISTENT AUDIO ELEMENT */}
-      <audio ref={audioRef} src="/song1.mp3" loop preload="auto" />
+      {/* 
+          CRITICAL FOR MOBILE: 
+          1. muted={false} explicitly
+          2. preload="auto"
+          3. Single persistent tag
+      */}
+      <audio 
+        ref={audioRef} 
+        src="/song1.mp3" 
+        loop 
+        preload="auto" 
+        playsInline
+      />
 
       {/* Global Background Elements */}
       <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-[0.04] z-0" />
@@ -90,7 +121,6 @@ export default function App() {
               )}
 
               {scene === 2 && (
-                /* APPLE-STYLE PREMIUM GALLERY */
                 <PremiumGallery onNext={next} />
               )}
 
@@ -114,7 +144,7 @@ export default function App() {
               )}
             </AnimatePresence>
 
-            {/* Global Navigation Button (Except Gallery & Final) */}
+            {/* Global Navigation Button */}
             {scene !== 2 && scene < 4 && (
               <motion.button 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }} onClick={next} 
@@ -130,7 +160,6 @@ export default function App() {
   );
 }
 
-/* APPLE-STYLE PREMIUM GALLERY COMPONENT */
 function PremiumGallery({ onNext }) {
   const images = ["/img1.jpg", "/img2.jpg", "/img3.jpg"];
   const [activeIndex, setActiveIndex] = useState(0);
@@ -139,7 +168,7 @@ function PremiumGallery({ onNext }) {
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollLeft, offsetWidth } = containerRef.current;
-    const index = Math.round(scrollLeft / (offsetWidth * 0.75)); // Approx based on card width
+    const index = Math.round(scrollLeft / (offsetWidth * 0.75));
     if (index !== activeIndex && index < images.length) {
       setActiveIndex(index);
     }
@@ -147,7 +176,6 @@ function PremiumGallery({ onNext }) {
 
   return (
     <motion.div key="premiumGallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
-      {/* Dynamic Backdrop Blur */}
       <AnimatePresence mode="wait">
         <motion.div 
           key={activeIndex} 
@@ -177,7 +205,7 @@ function PremiumGallery({ onNext }) {
         ))}
       </div>
 
-      <motion.p animate={{ x: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="relative z-10 mt-6 text-[10px] text-white/30 tracking-[0.4em] uppercase font-light italic">
+      <motion.p animate={{ x: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="relative z-10 mt-6 text-[10px] text-white/30 tracking-[0.4em] uppercase font-light italic text-center">
         O‘ngga suring →
       </motion.p>
 
@@ -192,7 +220,6 @@ function PremiumGallery({ onNext }) {
   );
 }
 
-/* FINAL提案 (Proposal Climax) */
 function FinalProposal() {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
@@ -218,7 +245,6 @@ function FinalProposal() {
 
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center px-6 relative overflow-hidden">
-      {/* Final Background Glow */}
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-pink-500 blur-[150px] opacity-10 animate-pulse" />
       </div>
@@ -244,7 +270,7 @@ function FinalProposal() {
             >💍</motion.div>
             
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="text-4xl md:text-6xl font-serif font-black mb-10 leading-tight tracking-tighter text-white">
-              Barchin… men seni tanlaganman…<br />va har kuni yana tanlashda veg am etaman ❤️
+              Barchin… men seni tanlaganman…<br />va har kuni yana tanlashda davom etaman ❤️
             </motion.h1>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
@@ -258,7 +284,6 @@ function FinalProposal() {
   );
 }
 
-/* HELPER COMPONENTS */
 function DaysCounter() {
   const [days, setDays] = useState(0);
   useEffect(() => {
