@@ -5,31 +5,36 @@ import confetti from "canvas-confetti";
 export default function App() {
   const [started, setStarted] = useState(false);
   const [scene, setScene] = useState(0);
-  const audioRef = useRef(null);
+  const audio1Ref = useRef(null);
+  const audio2Ref = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio("/song1.mp3");
-    audio.loop = true;
-    audio.preload = "auto";
-    audioRef.current = audio;
+    // Create audio instances on mount for pre-warm
+    const audio1 = new Audio("/song1.mp3");
+    audio1.loop = true;
+    audio1.preload = "auto";
+    audio1Ref.current = audio1;
+
+    const audio2 = new Audio("/song2.mp3");
+    audio2.loop = true;
+    audio2.preload = "auto";
+    audio2Ref.current = audio2;
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      if (audio1Ref.current) audio1Ref.current.pause();
+      if (audio2Ref.current) audio2Ref.current.pause();
     };
   }, []);
 
   const start = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = false;
-      audioRef.current.volume = 0.5;
-      const playPromise = audioRef.current.play();
+    if (audio1Ref.current) {
+      audio1Ref.current.muted = false;
+      audio1Ref.current.volume = 0.5;
+      const playPromise = audio1Ref.current.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
           const unlock = () => {
-            if (audioRef.current) audioRef.current.play();
+            if (audio1Ref.current) audio1Ref.current.play();
             window.removeEventListener("touchstart", unlock);
             window.removeEventListener("click", unlock);
           };
@@ -39,6 +44,38 @@ export default function App() {
       }
     }
     setStarted(true);
+  };
+
+  const switchMusic = () => {
+    if (audio1Ref.current && audio2Ref.current) {
+      // Fade out audio1
+      let vol = 0.5;
+      const fadeInterval = setInterval(() => {
+        if (vol > 0.05) {
+          vol -= 0.05;
+          audio1Ref.current.volume = vol;
+        } else {
+          clearInterval(fadeInterval);
+          audio1Ref.current.pause();
+          
+          // Play audio2
+          audio2Ref.current.muted = false;
+          audio2Ref.current.volume = 0;
+          audio2Ref.current.play().catch(e => console.log("Song 2 blocked", e));
+          
+          // Fade in audio2
+          let vol2 = 0;
+          const fadeInInterval = setInterval(() => {
+            if (vol2 < 0.5) {
+              vol2 += 0.05;
+              audio2Ref.current.volume = Math.min(0.5, vol2);
+            } else {
+              clearInterval(fadeInInterval);
+            }
+          }, 200);
+        }
+      }, 200);
+    }
   };
 
   const next = () => {
@@ -88,7 +125,6 @@ export default function App() {
           <motion.div key="experience" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-screen relative z-10">
             <AnimatePresence mode="wait">
               {scene === 0 && (
-                /* SCENE 1: MEMORY */
                 <motion.div key="sc1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, filter: "blur(20px)" }} className="relative flex flex-col items-center justify-center min-h-screen w-full px-6 overflow-hidden">
                   <FloatingHearts count={8} />
                   <motion.div className="relative max-w-md aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -103,7 +139,6 @@ export default function App() {
               )}
 
               {scene === 1 && (
-                /* SCENE 2: CHAT */
                 <motion.div key="sc2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
                   <motion.img src="/img2.jpg" className="w-64 md:w-80 rounded-[2rem] mb-10 shadow-2xl border border-white/10" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} />
                   <div className="flex flex-col space-y-4 w-full max-w-xs mb-8">
@@ -117,12 +152,10 @@ export default function App() {
               )}
 
               {scene === 2 && (
-                /* SCENE 3: HAPPY (GALLERY) */
                 <PremiumGallery onNext={next} customText="Sen bilan kulgan paytlarim — eng esda qoladigan onlarim bo‘ldi. Shu lahzalar uchun hammasiga arziydi ❤️" />
               )}
 
               {scene === 3 && (
-                /* SCENE 4: TRIALS */
                 <motion.div key="sc4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 overflow-hidden">
                   <Rain />
                   <motion.div className="relative max-w-sm aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 z-10">
@@ -138,7 +171,6 @@ export default function App() {
               )}
 
               {scene === 4 && (
-                /* SCENE 5: CONFESSION [NEW] */
                 <motion.div key="sc5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center px-10 overflow-hidden">
                   <AnimatePresence mode="wait">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.15 }} className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/img1.jpg')" }} />
@@ -153,9 +185,8 @@ export default function App() {
               )}
 
               {scene === 5 && (
-                /* SCENE 6: FINAL */
                 <motion.div key="sc6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full w-full">
-                  <FinalProposal customText="Barchin… shuncha narsadan keyin ham biz birgamiz. Va men seni tanlaganman…" />
+                  <FinalProposal onMusicSwitch={switchMusic} customText="Barchin… shuncha narsadan keyin ham biz birgamiz. Va men seni tanlaganman…" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -207,13 +238,16 @@ function PremiumGallery({ onNext, customText }) {
   );
 }
 
-function FinalProposal({ customText }) {
+function FinalProposal({ customText, onMusicSwitch }) {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
 
   useEffect(() => {
-    if (opened) confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ["#ff1d8e", "#ffd700", "#ffffff"] });
-  }, [opened]);
+    if (opened) {
+      onMusicSwitch();
+      confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ["#ff1d8e", "#ffd700", "#ffffff"] });
+    }
+  }, [opened, onMusicSwitch]);
 
   if (loved) {
     return (
