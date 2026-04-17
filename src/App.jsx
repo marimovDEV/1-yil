@@ -5,11 +5,11 @@ import confetti from "canvas-confetti";
 export default function App() {
   const [started, setStarted] = useState(false);
   const [scene, setScene] = useState(0);
+  const [currentTime2, setCurrentTime2] = useState(0);
   const audio1Ref = useRef(null);
   const audio2Ref = useRef(null);
 
   useEffect(() => {
-    // Create audio instances on mount for pre-warm
     const audio1 = new Audio("/song1.mp3");
     audio1.loop = true;
     audio1.preload = "auto";
@@ -20,9 +20,16 @@ export default function App() {
     audio2.preload = "auto";
     audio2Ref.current = audio2;
 
+    // Track time for song2 for subtitles
+    const handleTimeUpdate = () => {
+      setCurrentTime2(audio2.currentTime);
+    };
+    audio2.addEventListener("timeupdate", handleTimeUpdate);
+
     return () => {
       if (audio1Ref.current) audio1Ref.current.pause();
       if (audio2Ref.current) audio2Ref.current.pause();
+      audio2.removeEventListener("timeupdate", handleTimeUpdate);
     };
   }, []);
 
@@ -48,7 +55,6 @@ export default function App() {
 
   const switchMusic = () => {
     if (audio1Ref.current && audio2Ref.current) {
-      // Fade out audio1
       let vol = 0.5;
       const fadeInterval = setInterval(() => {
         if (vol > 0.05) {
@@ -58,12 +64,10 @@ export default function App() {
           clearInterval(fadeInterval);
           audio1Ref.current.pause();
           
-          // Play audio2
           audio2Ref.current.muted = false;
           audio2Ref.current.volume = 0;
           audio2Ref.current.play().catch(e => console.log("Song 2 blocked", e));
           
-          // Fade in audio2
           let vol2 = 0;
           const fadeInInterval = setInterval(() => {
             if (vol2 < 0.5) {
@@ -186,7 +190,11 @@ export default function App() {
 
               {scene === 5 && (
                 <motion.div key="sc6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full w-full">
-                  <FinalProposal onMusicSwitch={switchMusic} customText="Barchin… shuncha narsadan keyin ham biz birgamiz. Va men seni tanlaganman…" />
+                  <FinalProposal 
+                    currentTime={currentTime2}
+                    onMusicSwitch={switchMusic} 
+                    customText="Barchin… shuncha narsadan keyin ham biz birgamiz. Va men seni tanlaganman…" 
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -238,9 +246,22 @@ function PremiumGallery({ onNext, customText }) {
   );
 }
 
-function FinalProposal({ customText, onMusicSwitch }) {
+function FinalProposal({ customText, onMusicSwitch, currentTime }) {
   const [opened, setOpened] = useState(false);
   const [loved, setLoved] = useState(false);
+
+  const lyrics = [
+    { time: 5, text: "Sen mening tunim," },
+    { time: 10, text: "Tundagi nurim." },
+    { time: 15, text: "O'zing hayotim," },
+    { time: 20, text: "O'zing borlig'im." },
+    { time: 25, text: "Bu baxtli onimiz," },
+    { time: 30, text: "Abadiy bo'lsun." },
+    { time: 35, text: "Bizning sevgimiz," },
+    { time: 40, text: "Dunyoga to'lsin." },
+  ];
+
+  const currentLyric = lyrics.findLast(l => currentTime >= l.time);
 
   useEffect(() => {
     if (opened) {
@@ -264,6 +285,23 @@ function FinalProposal({ customText, onMusicSwitch }) {
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 bg-pink-500 blur-[150px] opacity-10 animate-pulse" />
       </div>
+
+      <AnimatePresence>
+        {opened && currentLyric && (
+          <motion.div 
+            key={currentLyric.text}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed bottom-24 left-0 right-0 text-center z-50 pointer-events-none"
+          >
+            <p className="text-xl md:text-2xl font-serif italic text-white/80 drop-shadow-lg">
+              {currentLyric.text}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {!opened ? (
           <motion.div key="gift" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ scale: 0, opacity: 0 }} className="z-10 flex flex-col items-center cursor-pointer group" onClick={() => setOpened(true)}>
